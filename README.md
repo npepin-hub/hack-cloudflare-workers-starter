@@ -16,6 +16,38 @@ Wayfair ships hundreds of thousands of pieces of furniture weekly through a glob
 
 ---
 
+## Domain Concepts
+
+### Purchase Order (PO)
+
+The document Wayfair sends to a supplier to kick off a shipment: *"We want 240 sofas, deliver by May 20, here's what we'll pay."* It's the contract. Every exception in this system starts with a PO that didn't go as planned.
+
+### Advance Ship Notice (ASN)
+
+The supplier's response before the shipment arrives: *"We shipped 220 sofas. XPO Logistics has them. Tracking number is XPO-88821. ETA June 2. Destination: CFC Boston."* It tells Wayfair what's actually coming so the warehouse can allocate dock space, schedule receiving staff, and pre-assign inventory locations.
+
+When the ASN is missing, the warehouse can't prepare — and Wayfair can't tell if the shipment:
+- Left the supplier's warehouse and is in transit
+- Is still sitting in their warehouse, unpacked
+- Is stuck at a port
+- Was never packed at all
+
+That's why the agent reaches out to the supplier first. No ASN = no visibility = no routing decision possible.
+
+### The Gap
+
+> **PO says 240 → ASN confirms 220 → 20 sofas short**
+
+The reconciliation between what was ordered and what was actually shipped is where the agent has to make a call: hold the PO open, reroute from another supplier, escalate to a buyer, or cancel. That's the routing decision this system exists to make.
+
+```
+PO = what Wayfair ordered
+ASN = what the supplier says they shipped
+Gap between them = the exception the agent handles
+```
+
+---
+
 ## Use Cases
 
 | Scenario | What the agent does |
