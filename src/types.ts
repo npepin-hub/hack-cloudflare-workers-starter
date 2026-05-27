@@ -29,6 +29,9 @@ export interface Env {
   WEBHOOK_SECRET?: string;
   AGENT_KV: KVNamespace;
   ASSETS: Fetcher;
+  DB: D1Database;
+  ESCALATION_THRESHOLD_DAYS: string;
+  AUTO_CANCEL_THRESHOLD_DAYS: string;
 }
 
 export const CONFIG_KEY = "agent:config";

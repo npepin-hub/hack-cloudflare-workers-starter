@@ -1,5 +1,0 @@
-# Copy to .dev.vars and fill in your key from https://www.subconscious.dev/platform
-SUBCONSCIOUS_API_KEY=sky_your_key_here
-
-# Optional: require this header on POST /api/webhook
-# WEBHOOK_SECRET=your-webhook-secret

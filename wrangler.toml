@@ -1,9 +1,8 @@
-name = "hack-agent-starter"
+name = "supplier-delay-agent"
 main = "src/index.ts"
 compatibility_date = "2025-05-05"
 compatibility_flags = ["nodejs_compat"]
 
-# Run the agent every hour. Change this for your hackathon demo.
 [triggers]
 crons = ["0 * * * *"]
 
@@ -12,10 +11,15 @@ binding = "AGENT_KV"
 id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_PREVIEW_KV_NAMESPACE_ID"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "supply-chain-db"
+database_id = "YOUR_DB_ID"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
 
 [vars]
-# Optional: set a shared secret for webhook triggers (override in .dev.vars locally)
-# WEBHOOK_SECRET = "change-me"
+ESCALATION_THRESHOLD_DAYS = "3"
+AUTO_CANCEL_THRESHOLD_DAYS = "14"

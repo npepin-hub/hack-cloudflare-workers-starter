@@ -1,406 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hackathon Agent Dashboard</title>
-    <style>
-      :root {
-        color-scheme: light dark;
-        --bg: #0b0d12;
-        --panel: #141824;
-        --border: #2a3144;
-        --text: #e8ecf5;
-        --muted: #9aa6bf;
-        --accent: #6ee7a8;
-        --accent-dim: #1f3d2f;
-        --danger: #f87171;
-        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplier Delay Agent</title>
+  <style>
+    :root {
+      --bg: #0b0d12; --panel: #141824; --border: #2a3144;
+      --text: #e8ecf5; --muted: #9aa6bf; --accent: #6ee7a8; --accent-dim: #1f3d2f;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: radial-gradient(circle at top, #172033, var(--bg)); color: var(--text); min-height: 100vh; }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    header { margin-bottom: 1.5rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .sub { color: var(--muted); font-size: 0.9rem; }
+    .grid { display: grid; grid-template-columns: 360px 1fr; gap: 1rem; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+    h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 1rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; margin-top: 0.75rem; }
+    label:first-of-type { margin-top: 0; }
+    input, select, textarea { width: 100%; background: #0f131c; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 0.6rem 0.75rem; font: inherit; font-size: 0.875rem; }
+    textarea { min-height: 70px; resize: vertical; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .tab { padding: 0.4rem 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font: inherit; font-size: 0.8rem; cursor: pointer; }
+    .tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .toggle-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.875rem; color: var(--muted); }
+    button.primary { width: 100%; margin-top: 1rem; padding: 0.7rem; background: var(--accent); color: #052e1a; border: none; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer; }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status-msg { font-size: 0.8rem; color: var(--muted); min-height: 1.2rem; margin-top: 0.5rem; text-align: center; }
+    .status-msg.err { color: #f87171; }
+    /* Dashboard */
+    .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .dash-header h2 { margin: 0; }
+    button.csv { padding: 0.4rem 0.85rem; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font: inherit; font-size: 0.8rem; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th { text-align: left; color: var(--muted); padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 0.55rem 0.6rem; border-bottom: 1px solid #1e2535; vertical-align: top; }
+    tr.new td { background: #1a2a1f; }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
+    .badge-open          { background: #2a2e3d; color: #9aa6bf; }
+    .badge-investigating { background: #1a2a4a; color: #60a5fa; }
+    .badge-awaiting_supplier { background: #3d3010; color: #fbbf24; }
+    .badge-decided       { background: #0f2e2e; color: #2dd4bf; }
+    .badge-escalated     { background: #3d1f0a; color: #fb923c; }
+    .badge-closed        { background: #0f2e1a; color: #4ade80; }
+    .badge-cancelled     { background: #2e0f0f; color: #f87171; }
+    .action-btn { padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font: inherit; font-size: 0.75rem; cursor: pointer; margin-right: 0.25rem; }
+    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .message-box { background: #0f131c; border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; font-size: 0.8rem; color: var(--muted); white-space: pre-wrap; line-height: 1.5; margin-top: 0.5rem; }
+    .message-row td { padding-bottom: 0.85rem; }
+    .empty { color: var(--muted); font-size: 0.875rem; padding: 1.5rem 0; text-align: center; }
+    /* Override modal */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; width: 360px; }
+    .modal h3 { margin-bottom: 1rem; font-size: 1rem; }
+    .modal-btns { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .modal-btns button { flex: 1; padding: 0.6rem; border-radius: 8px; border: none; font: inherit; font-weight: 600; cursor: pointer; }
+    .btn-cancel-modal { background: var(--border); color: var(--text); }
+    .btn-confirm { background: var(--accent); color: #052e1a; }
+    /* Dropzone */
+    .dropzone { border: 2px dashed var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; color: var(--muted); font-size: 0.8rem; cursor: pointer; margin-top: 0.5rem; }
+    .dropzone.has-file { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Supplier Delay Agent</h1>
+    <p class="sub">Cloudflare Workers + Subconscious · Supply Chain Track</p>
+  </header>
 
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        background: radial-gradient(circle at top, #172033, var(--bg));
-        color: var(--text);
-        min-height: 100vh;
-      }
-
-      .wrap {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 2rem 1.25rem 4rem;
-      }
-
-      header {
-        margin-bottom: 2rem;
-      }
-
-      h1 {
-        margin: 0 0 0.5rem;
-        font-size: 1.75rem;
-      }
-
-      .subtitle {
-        color: var(--muted);
-        margin: 0;
-      }
-
-      .grid {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      }
-
-      .panel {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.25rem;
-      }
-
-      h2 {
-        margin: 0 0 1rem;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-      }
-
-      label {
-        display: block;
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-bottom: 0.35rem;
-      }
-
-      input,
-      textarea,
-      select {
-        width: 100%;
-        background: #0f131c;
-        border: 1px solid var(--border);
-        color: var(--text);
-        border-radius: 10px;
-        padding: 0.65rem 0.75rem;
-        font: inherit;
-        margin-bottom: 0.85rem;
-      }
-
-      textarea {
-        min-height: 90px;
-        resize: vertical;
-      }
-
-      .row {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-      }
-
-      button {
-        border: none;
-        border-radius: 10px;
-        padding: 0.7rem 1rem;
-        font: inherit;
-        cursor: pointer;
-        background: var(--accent);
-        color: #052e1a;
-        font-weight: 600;
-      }
-
-      button.secondary {
-        background: transparent;
-        color: var(--text);
-        border: 1px solid var(--border);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      .status {
-        font-size: 0.85rem;
-        color: var(--muted);
-        min-height: 1.25rem;
-      }
-
-      .status.error {
-        color: var(--danger);
-      }
-
-      pre {
-        background: #0f131c;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 0.85rem;
-        overflow: auto;
-        white-space: pre-wrap;
-        word-break: break-word;
-        font-size: 0.85rem;
-        max-height: 320px;
-      }
-
-      .run {
-        border-top: 1px solid var(--border);
-        padding: 0.85rem 0;
-      }
-
-      .run:first-child {
-        border-top: none;
-        padding-top: 0;
-      }
-
-      .run-meta {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        font-size: 0.8rem;
-        color: var(--muted);
-        margin-bottom: 0.35rem;
-      }
-
-      .pill {
-        background: var(--accent-dim);
-        color: var(--accent);
-        padding: 0.1rem 0.45rem;
-        border-radius: 999px;
-      }
-
-      .pill.failed {
-        background: #3f1d1d;
-        color: var(--danger);
-      }
-
-      .tools {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-        margin-bottom: 0.85rem;
-      }
-
-      .tool-chip {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        color: var(--muted);
-      }
-
-      .tool-chip.active {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: var(--accent-dim);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <header>
-        <h1>Hackathon Agent</h1>
-        <p class="subtitle">
-          Cloudflare Worker + Subconscious API. Trigger via button, API, webhook, or cron.
-        </p>
-      </header>
-
-      <div class="grid">
-        <section class="panel">
-          <h2>Agent Logic</h2>
-          <label for="name">Agent name</label>
-          <input id="name" />
-
-          <label for="systemPrompt">System prompt</label>
-          <textarea id="systemPrompt"></textarea>
-
-          <label for="instructions">Default instructions</label>
-          <textarea id="instructions"></textarea>
-
-          <label for="cronInstructions">Cron instructions</label>
-          <textarea id="cronInstructions"></textarea>
-
-          <label for="enabledTools">Enabled tools</label>
-          <div id="tools" class="tools"></div>
-
-          <label>
-            <input type="checkbox" id="enableThinking" />
-            Enable thinking (slower, shows reasoning preamble)
-          </label>
-
-          <div class="row">
-            <button id="saveConfig">Save config</button>
-          </div>
-          <p id="configStatus" class="status"></p>
-        </section>
-
-        <section class="panel">
-          <h2>Run Agent</h2>
-          <label for="runInstructions">Instructions for this run</label>
-          <textarea id="runInstructions" placeholder="Leave blank to use default instructions"></textarea>
-
-          <div class="row">
-            <button id="runAgent">Run now (button trigger)</button>
-            <button id="refreshRuns" class="secondary">Refresh runs</button>
-          </div>
-          <p id="runStatus" class="status"></p>
-
-          <h2 style="margin-top: 1.5rem">Latest output</h2>
-          <pre id="latestOutput">No runs yet.</pre>
-        </section>
+  <div class="grid">
+    <!-- LEFT: Submit -->
+    <div class="panel">
+      <h2>Submit Exception</h2>
+      <div class="tabs">
+        <button class="tab active" onclick="setTab('manual')">Manual</button>
+        <button class="tab" onclick="setTab('document')">Document</button>
       </div>
 
-      <section class="panel" style="margin-top: 1rem">
-        <h2>Recent runs</h2>
-        <div id="runs"></div>
-      </section>
+      <div id="manual-form">
+        <label>PO Number</label>
+        <input id="po_number" list="po_list" placeholder="Search PO number…" oninput="onPoInput(this)" autocomplete="off" />
+        <datalist id="po_list">
+          <option value="PO-2026-4821">3 suppliers</option>
+          <option value="PO-2026-4822">2 suppliers</option>
+          <option value="PO-2026-4823">MegaFlat Inc</option>
+          <option value="PO-2026-4824">2 suppliers</option>
+          <option value="PO-2026-4825">2 suppliers</option>
+        </datalist>
+
+        <label id="supplier_label" style="display:none">Supplier</label>
+        <select id="supplier_select" style="display:none" onchange="onSupplierChange(this)"></select>
+        <input type="hidden" id="supplier_id" value="" />
+
+        <label>Delay Reason</label>
+        <input id="delay_reason" placeholder="e.g. Port congestion" />
+
+        <label>Days Delayed</label>
+        <input id="days_delayed" type="number" min="1" placeholder="e.g. 5" />
+
+        <div class="toggle-row">
+          <input type="checkbox" id="asn_missing" style="width:auto" />
+          <span>ASN Missing</span>
+        </div>
+      </div>
+
+      <div id="doc-form" style="display:none">
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          Drop PDF / manifest here or click to upload
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display:none" onchange="handleFile(this)" />
+      </div>
+
+      <button class="primary" id="submitBtn" onclick="submitException()">Submit Exception</button>
+      <p class="status-msg" id="submitStatus"></p>
     </div>
 
-    <script>
-      const $ = (id) => document.getElementById(id);
+    <!-- RIGHT: Dashboard -->
+    <div class="panel">
+      <div class="dash-header">
+        <h2>Exception Queue</h2>
+        <button class="csv" onclick="downloadCSV()">Download CSV</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>PO</th><th>Supplier</th><th>Days</th><th>ASN</th>
+            <th>Status</th><th>Decision</th><th>Reason</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="exTable"><tr><td colspan="8" class="empty">No exceptions yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-      let availableTools = [];
+<!-- Override modal -->
+<div class="modal-bg" id="overrideModal" style="display:none">
+  <div class="modal">
+    <h3>Override Decision</h3>
+    <label>Decision</label>
+    <select id="overrideDecision">
+      <option value="hold">Hold</option>
+      <option value="reroute">Reroute</option>
+      <option value="escalate">Escalate</option>
+      <option value="cancel">Cancel</option>
+    </select>
+    <label>Reason</label>
+    <textarea id="overrideReason" placeholder="Why are you overriding?"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel-modal" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmOverride()">Confirm</button>
+    </div>
+  </div>
+</div>
 
-      async function api(path, options = {}) {
-        const res = await fetch(path, {
-          headers: { "Content-Type": "application/json" },
-          ...options,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.error || `Request failed (${res.status})`);
-        }
-        return data;
+<script>
+  let poDebounce = null
+
+  function onPoInput(input) {
+    clearTimeout(poDebounce)
+    const po = input.value.trim()
+    const select = document.getElementById('supplier_select')
+    const label = document.getElementById('supplier_label')
+    select.style.display = 'none'
+    label.style.display = 'none'
+    document.getElementById('supplier_id').value = ''
+    if (po.length < 6) return
+    poDebounce = setTimeout(() => loadSuppliersForPO(po), 300)
+  }
+
+  async function loadSuppliersForPO(po) {
+    try {
+      const res = await fetch(`/po/${encodeURIComponent(po)}/suppliers`)
+      const suppliers = await res.json()
+      if (!suppliers.length) return
+      const select = document.getElementById('supplier_select')
+      select.innerHTML = suppliers.map(s =>
+        `<option value="${s.id}">${s.name} (${s.tier})</option>`
+      ).join('')
+      document.getElementById('supplier_label').style.display = ''
+      select.style.display = ''
+      document.getElementById('supplier_id').value = suppliers[0].id
+    } catch {}
+  }
+
+  function onSupplierChange(select) {
+    document.getElementById('supplier_id').value = select.value
+  }
+
+  let currentTab = 'manual'
+  let fileBase64 = null
+  let overrideId = null
+  let lastIds = new Set()
+
+  function setTab(tab) {
+    currentTab = tab
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    document.querySelectorAll('.tab')[tab === 'manual' ? 0 : 1].classList.add('active')
+    document.getElementById('manual-form').style.display = tab === 'manual' ? '' : 'none'
+    document.getElementById('doc-form').style.display = tab === 'document' ? '' : 'none'
+  }
+
+  function handleFile(input) {
+    const file = input.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = e => {
+      fileBase64 = e.target.result.split(',')[1]
+      document.getElementById('dropzone').textContent = `✓ ${file.name}`
+      document.getElementById('dropzone').classList.add('has-file')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function submitException() {
+    const btn = document.getElementById('submitBtn')
+    const status = document.getElementById('submitStatus')
+    btn.disabled = true
+    status.textContent = 'Submitting…'
+    status.className = 'status-msg'
+
+    let body
+    if (currentTab === 'manual') {
+      const po = document.getElementById('po_number').value.trim()
+      const supplierId = document.getElementById('supplier_id').value
+      if (!po) { status.textContent = 'Enter a PO number'; status.className = 'status-msg err'; btn.disabled = false; return }
+      if (!supplierId) { status.textContent = `No suppliers found for "${po}" — check PO number`; status.className = 'status-msg err'; btn.disabled = false; return }
+      const days = parseInt(document.getElementById('days_delayed').value)
+      body = {
+        type: 'manual',
+        po_number: po,
+        supplier_id: supplierId,
+        delay_reason: document.getElementById('delay_reason').value || undefined,
+        days_delayed: isNaN(days) ? undefined : days,
+        asn_missing: document.getElementById('asn_missing').checked,
       }
+    } else {
+      body = { type: 'document', po_number: '', supplier_id: '', document: fileBase64 }
+    }
 
-      function renderToolChips(config) {
-        const container = $("tools");
-        container.innerHTML = "";
-        for (const tool of availableTools) {
-          const chip = document.createElement("button");
-          chip.type = "button";
-          chip.className = "tool-chip" + (config.enabledTools.includes(tool.name) ? " active" : "");
-          chip.textContent = tool.name;
-          chip.title = tool.description;
-          chip.onclick = () => {
-            const enabled = new Set(config.enabledTools);
-            if (enabled.has(tool.name)) enabled.delete(tool.name);
-            else enabled.add(tool.name);
-            config.enabledTools = [...enabled];
-            renderToolChips(config);
-          };
-          container.appendChild(chip);
-        }
-        container.dataset.config = JSON.stringify(config);
+    try {
+      const res = await fetch('/exceptions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`)
+      status.textContent = `✓ Exception ${data.id.slice(0, 8)}… created`
+    } catch (e) {
+      status.textContent = e.message
+      status.className = 'status-msg err'
+    } finally {
+      btn.disabled = false
+    }
+  }
+
+  function badge(status) {
+    return `<span class="badge badge-${status}">${status.replace('_', ' ')}</span>`
+  }
+
+  function renderTable(exceptions) {
+    const tbody = document.getElementById('exTable')
+    if (!exceptions.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">No exceptions yet.</td></tr>'
+      return
+    }
+    const newIds = new Set(exceptions.map(e => e.id))
+    tbody.innerHTML = exceptions.map(ex => {
+      const isNew = !lastIds.has(ex.id)
+      const actions = []
+      if (['decided', 'awaiting_supplier', 'escalated'].includes(ex.status)) {
+        actions.push(`<button class="action-btn" onclick="openOverride('${ex.id}')">Override</button>`)
       }
-
-      async function loadConfig() {
-        const [{ tools }, config] = await Promise.all([
-          api("/api/agent/tools"),
-          api("/api/agent/config"),
-        ]);
-        availableTools = tools;
-        $("name").value = config.name;
-        $("systemPrompt").value = config.systemPrompt;
-        $("instructions").value = config.instructions;
-        $("cronInstructions").value = config.cronInstructions;
-        $("enableThinking").checked = config.enableThinking;
-        renderToolChips(config);
+      if (ex.status === 'awaiting_supplier') {
+        actions.push(`<button class="action-btn" onclick="simulateResponse('${ex.id}')">Sim Response</button>`)
       }
+      actions.push(`<button class="action-btn" onclick="toggleMessage('${ex.id}')">Log</button>`)
 
-      async function saveConfig() {
-        const config = JSON.parse($("tools").dataset.config || "{}");
-        const payload = {
-          name: $("name").value,
-          systemPrompt: $("systemPrompt").value,
-          instructions: $("instructions").value,
-          cronInstructions: $("cronInstructions").value,
-          enableThinking: $("enableThinking").checked,
-          enabledTools: config.enabledTools || [],
-        };
-        await api("/api/agent/config", {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        });
-        $("configStatus").textContent = "Config saved.";
-      }
+      const msgRowId = `msg-${ex.id}`
+      return `<tr class="${isNew ? 'new' : ''}">
+        <td>${ex.po_number}</td>
+        <td>${ex.supplier_name || ex.supplier_id}</td>
+        <td>${ex.days_delayed ?? '—'}</td>
+        <td>${ex.asn_missing ? '⚠ Yes' : 'No'}</td>
+        <td>${badge(ex.status)}</td>
+        <td>${ex.decision ? badge(ex.decision) : '—'}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${ex.decision_reason ?? ''}">${ex.decision_reason ?? '—'}</td>
+        <td>${actions.join('')}</td>
+      </tr>
+      <tr id="${msgRowId}" class="message-row" style="display:none">
+        <td colspan="8"><div id="msgbox-${ex.id}" class="message-box">Loading…</div></td>
+      </tr>`
+    }).join('')
+    lastIds = newIds
+  }
 
-      function renderRuns(runs) {
-        const container = $("runs");
-        if (!runs.length) {
-          container.innerHTML = "<p class='status'>No runs yet.</p>";
-          return;
-        }
+  async function poll() {
+    try {
+      const res = await fetch('/exceptions')
+      renderTable(await res.json())
+    } catch {}
+  }
 
-        container.innerHTML = runs
-          .map(
-            (run) => `
-          <div class="run">
-            <div class="run-meta">
-              <span class="pill ${run.status === "failed" ? "failed" : ""}">${run.status}</span>
-              <span class="pill">${run.trigger}</span>
-              <span>${new Date(run.createdAt).toLocaleString()}</span>
-            </div>
-            <div>${run.output || run.error || "Running..."}</div>
-          </div>
-        `,
-          )
-          .join("");
+  async function simulateResponse(id) {
+    const body = { asn_number: 'ASN-88821', new_eta: '2026-06-02', items_confirmed: 220, carrier: 'XPO Logistics' }
+    await fetch(`/exceptions/${id}/simulate-supplier-response`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  }
 
-        const latest = runs[0];
-        $("latestOutput").textContent =
-          latest.output || latest.error || "Run in progress...";
-      }
+  async function toggleMessage(id) {
+    const row = document.getElementById(`msg-${id}`)
+    const box = document.getElementById(`msgbox-${id}`)
+    if (row.style.display !== 'none') { row.style.display = 'none'; return }
+    row.style.display = ''
+    try {
+      const data = await fetch(`/exceptions/${id}`).then(r => r.json())
+      const log = data.agent_log || []
+      if (!log.length) { box.textContent = 'No agent activity yet.'; return }
+      box.textContent = log.map(e => {
+        const label = { investigation: '🔍 Investigation', outreach: '📨 Outreach', decision: '⚖️  Decision', notification: '✅ Notification', supplier: '🏭 Supplier', human: '👤 Human', system: '⚠️  System' }[e.agent] || e.agent
+        let result = ''
+        try { result = JSON.stringify(JSON.parse(e.result), null, 2) } catch { result = e.result }
+        return `[${e.created_at}] ${label} — ${e.action}\n${result}`
+      }).join('\n\n─────────────────────────────\n\n')
+    } catch { box.textContent = 'Failed to load log.' }
+  }
 
-      async function refreshRuns() {
-        const { runs } = await api("/api/runs");
-        renderRuns(runs);
-      }
+  function openOverride(id) {
+    overrideId = id
+    document.getElementById('overrideModal').style.display = 'flex'
+  }
+  function closeModal() {
+    overrideId = null
+    document.getElementById('overrideModal').style.display = 'none'
+  }
+  async function confirmOverride() {
+    const decision = document.getElementById('overrideDecision').value
+    const reason = document.getElementById('overrideReason').value
+    if (!reason.trim()) return
+    await fetch(`/exceptions/${overrideId}/resolve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, reason }) })
+    closeModal()
+  }
 
-      async function runAgent() {
-        $("runAgent").disabled = true;
-        $("runStatus").textContent = "Running agent...";
-        $("runStatus").className = "status";
-        try {
-          const instructions = $("runInstructions").value.trim();
-          const run = await api("/api/run", {
-            method: "POST",
-            body: JSON.stringify({
-              trigger: "button",
-              ...(instructions ? { instructions } : {}),
-            }),
-          });
-          $("runStatus").textContent = `Run ${run.id} completed.`;
-          await refreshRuns();
-        } catch (error) {
-          $("runStatus").textContent = error.message;
-          $("runStatus").className = "status error";
-        } finally {
-          $("runAgent").disabled = false;
-        }
-      }
+  function downloadCSV() {
+    fetch('/exceptions').then(r => r.json()).then(data => {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+      const header = 'Exception ID,PO Number,Supplier,Days Delayed,ASN Missing,Status,Decision,Decision Reason,Overridden,Created At,Updated At,Resolved At,Downloaded At'
+      const rows = data.map(e => [
+        e.id, e.po_number, e.supplier_name || e.supplier_id,
+        e.days_delayed ?? '', e.asn_missing ? 'yes' : 'no',
+        e.status, e.decision ?? '', e.decision_reason ?? '',
+        e.overridden ? 'yes' : 'no',
+        e.created_at, e.updated_at, e.resolved_at ?? '', ts
+      ].map(v => JSON.stringify(v)).join(','))
+      const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' })
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `exceptions_${ts}.csv`; a.click()
+    })
+  }
 
-      $("saveConfig").onclick = () =>
-        saveConfig().catch((e) => {
-          $("configStatus").textContent = e.message;
-          $("configStatus").className = "status error";
-        });
-
-      $("runAgent").onclick = runAgent;
-      $("refreshRuns").onclick = () =>
-        refreshRuns().catch((e) => {
-          $("runStatus").textContent = e.message;
-          $("runStatus").className = "status error";
-        });
-
-      loadConfig()
-        .then(refreshRuns)
-        .catch((e) => {
-          $("configStatus").textContent = e.message;
-          $("configStatus").className = "status error";
-        });
-    </script>
-  </body>
+  poll()
+  setInterval(poll, 3000)
+</script>
+</body>
 </html>
