@@ -6,11 +6,6 @@ compatibility_flags = ["nodejs_compat"]
 [triggers]
 crons = ["0 * * * *"]
 
-[[kv_namespaces]]
-binding = "AGENT_KV"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_YOUR_PREVIEW_KV_NAMESPACE_ID"
-
 [[d1_databases]]
 binding = "DB"
 database_name = "supply-chain-db"
